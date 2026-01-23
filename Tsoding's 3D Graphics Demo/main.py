@@ -22,7 +22,12 @@ def normal(v: Vector): # Coord Translation for orthogonal projection from top-le
     
 def point(v: Vector):
     return pygame.draw.rect(screen, v.color, pygame.Rect(v.x - v.size/2, v.y - v.size/2, v.size, v.size))
-        
+
+def line(v1: Vector, v2: Vector):
+    start = [v1.x, v1.y]
+    end = [v2.x, v2.y]
+    return pygame.draw.line(screen, v1.color, start, end, width=5)
+
 def project(v: Vector): 
     xPrime = v.x / v.z
     yPrime = v.y / v.z
@@ -49,6 +54,10 @@ VectorPoints = [
     Vector(0.25, -0.25, -0.25, color="yellow"),
     Vector(-0.25, -0.25, -0.25),
 ]
+
+def VectorPipeline(v: Vector, angle: float, dz: float):
+    return normal(project(translate_z(rotate_xz(v, angle), dz)))
+
             
 defaultColor = "green"
 pygame.init()
@@ -65,11 +74,13 @@ angle = 0
 def anim():
     global dt, dz, angle
     # dz += 1 * dt
-    angle += 1*math.pi*dt
+    angle += 0.5*math.pi*dt
     screen.fill("black")
     for v in VectorPoints:
         point(normal(project(translate_z(rotate_xz(v, angle), dz))))
-        
+
+    line(VectorPipeline(VectorPoints[0], angle, dz), VectorPipeline(VectorPoints[4], angle, dz))
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
