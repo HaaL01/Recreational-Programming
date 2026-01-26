@@ -24,7 +24,7 @@ class VectorPair:
 def normal(v: Vector): # Coord Translation for orthogonal projection from top-left (0,0) to a center cordinates (normalization)
     newX = (v.x + 1)/2 * screenWidth
     newY = (1 - (v.y + 1)/2) * screenHeight
-    return replace(v, x=newX, y=newY) # only works in a 1:1 ratio so how do we make it scale based on screen ratios?
+    return replace(v, x=newX, y=newY) # TODO: only works in a 1:1 ratio so how do we make it scale based on screen ratios?
     
 def point(v: Vector):
     return pygame.draw.rect(screen, v.color, pygame.Rect(v.x - v.size/2, v.y - v.size/2, v.size, v.size))
@@ -78,7 +78,7 @@ VectorPairs = [
     VectorPair(2, 6),
     VectorPair(3, 7),
 ]
-            
+
 defaultColor = "green"
 pygame.init()
 screenWidth = 900
