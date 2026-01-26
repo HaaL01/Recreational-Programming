@@ -14,11 +14,17 @@ class Vector:
     z: float
     size: int = 10
     color: str = "green"
+    # stop: list[int] 
+    
+@dataclass
+class VectorPair:
+    start: int
+    stop: int
 
 def normal(v: Vector): # Coord Translation for orthogonal projection from top-left (0,0) to a center cordinates (normalization)
     newX = (v.x + 1)/2 * screenWidth
     newY = (1 - (v.y + 1)/2) * screenHeight
-    return replace(v, x=newX, y=newY)
+    return replace(v, x=newX, y=newY) # only works in a 1:1 ratio so how do we make it scale based on screen ratios?
     
 def point(v: Vector):
     return pygame.draw.rect(screen, v.color, pygame.Rect(v.x - v.size/2, v.y - v.size/2, v.size, v.size))
@@ -43,21 +49,35 @@ def rotate_xz(v: Vector, angle: float):
     z = v.x * s + v.z * c
     return replace(v, x = x, z= z)
 
-VectorPoints = [
-    Vector(0.25, 0.25, 0.25, color="red"),
-    Vector(-0.25, 0.25, 0.25, color="blue"),
-    Vector(0.25, -0.25, 0.25, color="yellow"),
-    Vector(-0.25, -0.25, 0.25),
-    
-    Vector(0.25, 0.25, -0.25, color="red"),
-    Vector(-0.25, 0.25, -0.25, color="blue"),
-    Vector(0.25, -0.25, -0.25, color="yellow"),
-    Vector(-0.25, -0.25, -0.25),
-]
-
 def VectorPipeline(v: Vector, angle: float, dz: float):
     return normal(project(translate_z(rotate_xz(v, angle), dz)))
 
+VectorPoints = [
+    Vector(0.25, 0.25, 0.25), 
+    Vector(-0.25, 0.25, 0.25),
+    Vector(0.25, -0.25, 0.25),
+    Vector(-0.25, -0.25, 0.25),
+    
+    Vector(0.25, 0.25, -0.25),
+    Vector(-0.25, 0.25, -0.25),
+    Vector(0.25, -0.25, -0.25),
+    Vector(-0.25, -0.25, -0.25),
+]
+
+VectorPairs = [
+    VectorPair(0, 1),  # Front face
+    VectorPair(1, 3),
+    VectorPair(3, 2),
+    VectorPair(2, 0),
+    VectorPair(4, 5),  # Back face
+    VectorPair(5, 7),
+    VectorPair(7, 6),
+    VectorPair(6, 4),
+    VectorPair(0, 4),  # Connecting edges
+    VectorPair(1, 5),
+    VectorPair(2, 6),
+    VectorPair(3, 7),
+]
             
 defaultColor = "green"
 pygame.init()
@@ -76,10 +96,10 @@ def anim():
     # dz += 1 * dt
     angle += 0.5*math.pi*dt
     screen.fill("black")
-    for v in VectorPoints:
-        point(normal(project(translate_z(rotate_xz(v, angle), dz))))
-
-    line(VectorPipeline(VectorPoints[0], angle, dz), VectorPipeline(VectorPoints[4], angle, dz))
+    for vp in VectorPairs:
+        line(VectorPipeline(VectorPoints[vp.start], angle, dz), VectorPipeline(VectorPoints[vp.stop], angle, dz))
+        # point(normal(project(translate_z(rotate_xz(v, angle), dz))))
+   
 
 while running:
     for event in pygame.event.get():
