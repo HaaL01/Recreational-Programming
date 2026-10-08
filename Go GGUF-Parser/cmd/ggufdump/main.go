@@ -23,4 +23,11 @@ func main() {
 	fmt.Printf("Version:  %d\n", f.Version)
 	fmt.Printf("Tensors:  %d\n", f.TensorCount)
 	fmt.Printf("Metadata: %d keys\n", f.KVCount)
+	for _, kv := range f.Metadata {
+		if arr, ok := kv.Value.([]any); ok && len(arr) > 8 {
+			fmt.Printf("  %s = [%d items]\n", kv.Key, len(arr))
+			continue
+		}
+		fmt.Printf("  %s = %v\n", kv.Key, kv.Value)
+	}
 }

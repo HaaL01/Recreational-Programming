@@ -10,4 +10,5 @@ type File struct {
 	Version     uint32
 	TensorCount uint64
 	KVCount     uint64
+	Metadata    []KV // in file order
 }

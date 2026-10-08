@@ -27,6 +27,10 @@ func Parse(r io.Reader) (*File, error) {
 	f.TensorCount = rd.u64()
 	f.KVCount = rd.u64()
 
+	for i := uint64(0); i < f.KVCount && rd.err == nil; i++ {
+		f.Metadata = append(f.Metadata, rd.kv())
+	}
+
 	if rd.err != nil {
 		return nil, rd.err
 	}
