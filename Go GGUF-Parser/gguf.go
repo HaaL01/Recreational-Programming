@@ -11,4 +11,9 @@ type File struct {
 	TensorCount uint64
 	KVCount     uint64
 	Metadata    []KV // in file order
+	Tensors     []Tensor
+
+	// DataOffset is where tensor data starts, measured from the start of
+	// the file. A tensor's bytes begin at DataOffset + Tensor.Offset.
+	DataOffset int64
 }

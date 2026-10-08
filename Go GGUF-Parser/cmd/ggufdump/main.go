@@ -30,4 +30,9 @@ func main() {
 		}
 		fmt.Printf("  %s = %v\n", kv.Key, kv.Value)
 	}
+
+	fmt.Printf("Data offset: %d\n", f.DataOffset)
+	for _, t := range f.Tensors {
+		fmt.Printf("  %-40s type=%-3d shape=%v offset=%d\n", t.Name, t.Type, t.Shape, t.Offset)
+	}
 }

@@ -30,10 +30,22 @@ func Parse(r io.Reader) (*File, error) {
 	for i := uint64(0); i < f.KVCount && rd.err == nil; i++ {
 		f.Metadata = append(f.Metadata, rd.kv())
 	}
+	for i := uint64(0); i < f.TensorCount && rd.err == nil; i++ {
+		f.Tensors = append(f.Tensors, rd.tensor())
+	}
 
 	if rd.err != nil {
 		return nil, rd.err
 	}
+
+	// Tensor data starts at the next multiple of general.alignment.
+	align := int64(32)
+	if v, ok := f.Get("general.alignment"); ok {
+		if a, ok := v.(uint32); ok && a > 0 {
+			align = int64(a)
+		}
+	}
+	f.DataOffset = (rd.pos + align - 1) / align * align
 	return f, nil
 }
 
