@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -72,11 +73,45 @@ func writeResponse(w http.ResponseWriter, resp CachedResponse, cacheStatus strin
 	w.Write(resp.Body)
 }
 
+// newAdminMux builds the router for admin commands like clearing the cache.
+func newAdminMux(cache *Cache) *http.ServeMux {
+	admin := http.NewServeMux()
+	admin.HandleFunc("POST /clear-cache", func(w http.ResponseWriter, r *http.Request) {
+		cache.Clear()
+		log.Println("Cache cleared")
+		w.Write([]byte("cache cleared\n"))
+	})
+	return admin
+}
+
+// requestClearCache asks an already running proxy to empty its cache.
+func requestClearCache(adminAddr string) {
+	resp, err := http.Post("http://"+adminAddr+"/clear-cache", "text/plain", nil)
+	if err != nil {
+		log.Fatal("could not reach the running proxy: ", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Fatal("clearing the cache failed: ", resp.Status)
+	}
+	fmt.Println("Cache cleared")
+}
+
 func main() {
 	// Parse Args
 	port := flag.String("port", "8080", "Cache-Proxy Server Port")
 	origin := flag.String("origin", "", "URL of the server to forward requests to")
+	adminPort := flag.String("admin-port", "9090", "Port for admin commands (localhost only)")
+	clearCache := flag.Bool("clear-cache", false, "Clear the cache of a running proxy and exit")
 	flag.Parse()
+
+	adminAddr := "127.0.0.1:" + *adminPort
+
+	if *clearCache {
+		requestClearCache(adminAddr)
+		return
+	}
 
 	if *origin == "" {
 		log.Fatal("--origin is required")
@@ -92,6 +127,12 @@ func main() {
 		origin: originURL,
 		client: &http.Client{},
 	}
+
+	// Admin server: only reachable from this machine
+	go func() {
+		log.Printf("Admin server listening on %s", adminAddr)
+		log.Fatal(http.ListenAndServe(adminAddr, newAdminMux(server.cache)))
+	}()
 
 	addr := ":" + *port
 	log.Printf("Caching proxy listening on %s, forwarding to %s", addr, originURL)

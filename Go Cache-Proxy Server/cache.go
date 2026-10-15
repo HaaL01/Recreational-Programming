@@ -40,3 +40,9 @@ func (c *Cache) Set(key string, resp CachedResponse) {
 	defer c.mu.Unlock()
 	c.entries[key] = resp
 }
+
+func (c *Cache) Clear() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	clear(c.entries)
+}
