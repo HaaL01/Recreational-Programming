@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"sync"
+	"time"
 )
 
 // CachedResponse holds everything we need to replay a response later.
@@ -10,6 +11,7 @@ type CachedResponse struct {
 	StatusCode int
 	Header     http.Header
 	Body       []byte
+	ExpiresAt  time.Time
 }
 
 // Cache is an in-memory store of responses, keyed by request.
@@ -25,6 +27,10 @@ func NewCache() *Cache {
 func (c *Cache) Get(key string) (CachedResponse, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	if time.Now().After(c.entries[key].ExpiresAt) {
+		delete(c.entries, key)
+		return CachedResponse{}, false
+	}
 	resp, ok := c.entries[key]
 	return resp, ok
 }
