@@ -13,10 +13,6 @@ type CacheProxyServer struct {
 
 }
 
-type Cache struct {
-	// Add fields for cache implementation if needed
-}
-
 func main() {
 	// Parse Args
 	port := flag.String("port", "8080", "Cache-Proxy Server Port")
