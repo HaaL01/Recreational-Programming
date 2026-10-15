@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type CacheProxyServer struct {
@@ -49,6 +50,7 @@ func (s *CacheProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		StatusCode: resp.StatusCode,
 		Header:     resp.Header.Clone(),
 		Body:       body,
+		ExpiresAt:  time.Now().Add(time.Minute * 1),
 	}
 
 	// Only cache successful GETs
