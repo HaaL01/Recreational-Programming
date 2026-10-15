@@ -195,3 +195,18 @@ func TestClearCacheEndpoint(t *testing.T) {
 		t.Errorf("GET: got status %d, want 405", resp.StatusCode)
 	}
 }
+
+func TestEntryExpiresAfterTTL(t *testing.T) {
+	cache := NewCache()
+	cache.Set("GET /a", CachedResponse{ExpiresAt: time.Now().Add(50 * time.Millisecond)})
+
+	if _, ok := cache.Get("GET /a"); !ok {
+		t.Fatal("entry missing before TTL ran out")
+	}
+
+	time.Sleep(100 * time.Millisecond)
+
+	if _, ok := cache.Get("GET /a"); ok {
+		t.Error("entry still in cache after TTL ran out")
+	}
+}
